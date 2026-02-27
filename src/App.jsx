@@ -3,6 +3,143 @@ import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
 import profileImage from './mine.jpg'
 import './App.css'
 
+const PDF_JS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.8.69/build/pdf.min.mjs'
+const PDF_JS_WORKER_URL =
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs'
+
+const SKILL_KEYWORDS = [
+  { skill: 'JavaScript', patterns: [/\bjavascript\b/, /\bjs\b/] },
+  { skill: 'TypeScript', patterns: [/\btypescript\b/, /\bts\b/] },
+  { skill: 'React', patterns: [/\breact\b/, /\breactjs\b/] },
+  { skill: 'Node.js', patterns: [/\bnode\b/, /\bnode\.js\b/, /\bnodejs\b/] },
+  { skill: 'Express.js', patterns: [/\bexpress\b/, /\bexpress\.js\b/] },
+  { skill: 'Java', patterns: [/\bjava\b/] },
+  { skill: 'Python', patterns: [/\bpython\b/] },
+  { skill: 'C', patterns: [/\bc\b/] },
+  { skill: 'C++', patterns: [/\bc\+\+\b/] },
+  { skill: 'SQL', patterns: [/\bsql\b/, /\bmysql\b/, /\bpostgresql\b/, /\bpostgres\b/] },
+  { skill: 'MongoDB', patterns: [/\bmongodb\b/, /\bmongo\b/] },
+  { skill: 'REST API', patterns: [/\brest\b/, /\bapi\b/] },
+  { skill: 'HTML', patterns: [/\bhtml\b/] },
+  { skill: 'CSS', patterns: [/\bcss\b/] },
+  { skill: 'Git', patterns: [/\bgit\b/, /\bgithub\b/] },
+  { skill: 'Docker', patterns: [/\bdocker\b/] },
+  { skill: 'AWS', patterns: [/\baws\b/, /\bamazon web services\b/] },
+  { skill: 'DSA', patterns: [/\bdata structures\b/, /\balgorithms\b/, /\bdsa\b/] },
+  { skill: 'Problem Solving', patterns: [/\bproblem solving\b/] },
+]
+
+const REQUIREMENT_WEIGHTS = {
+  mustHave: 3,
+  standard: 2,
+  optional: 1,
+}
+
+const MUST_HAVE_CUES = [
+  /\bmust\b/,
+  /\brequired\b/,
+  /\bmandatory\b/,
+  /\bminimum\b/,
+  /\bneed to\b/,
+  /\bshould have\b/,
+]
+
+const OPTIONAL_CUES = [
+  /\bpreferred\b/,
+  /\bnice to have\b/,
+  /\bgood to have\b/,
+  /\bplus\b/,
+  /\bbonus\b/,
+]
+
+let pdfJsPromise
+
+const getPdfJsModule = async () => {
+  if (!pdfJsPromise) {
+    pdfJsPromise = import(/* @vite-ignore */ PDF_JS_URL).then((pdfjs) => {
+      pdfjs.GlobalWorkerOptions.workerSrc = PDF_JS_WORKER_URL
+      return pdfjs
+    })
+  }
+
+  return pdfJsPromise
+}
+
+const getRequirementPriority = (sentence) => {
+  if (MUST_HAVE_CUES.some((pattern) => pattern.test(sentence))) {
+    return 'mustHave'
+  }
+
+  if (OPTIONAL_CUES.some((pattern) => pattern.test(sentence))) {
+    return 'optional'
+  }
+
+  return 'standard'
+}
+
+const comparePriority = (currentPriority, nextPriority) =>
+  REQUIREMENT_WEIGHTS[nextPriority] > REQUIREMENT_WEIGHTS[currentPriority]
+
+const extractSkillsFromText = (text) =>
+  SKILL_KEYWORDS.filter((entry) => entry.patterns.some((pattern) => pattern.test(text))).map(
+    (entry) => entry.skill,
+  )
+
+const extractWeightedRequirements = (jobDescriptionText) => {
+  const sentences = jobDescriptionText
+    .split(/[\n.!?;:]+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean)
+
+  const requirementMap = new Map()
+
+  sentences.forEach((sentence) => {
+    const sentencePriority = getRequirementPriority(sentence)
+
+    SKILL_KEYWORDS.forEach((entry) => {
+      const existsInSentence = entry.patterns.some((pattern) => pattern.test(sentence))
+
+      if (!existsInSentence) {
+        return
+      }
+
+      const existingPriority = requirementMap.get(entry.skill)
+
+      if (!existingPriority || comparePriority(existingPriority, sentencePriority)) {
+        requirementMap.set(entry.skill, sentencePriority)
+      }
+    })
+  })
+
+  return Array.from(requirementMap.entries()).map(([skill, priority]) => ({
+    skill,
+    priority,
+    weight: REQUIREMENT_WEIGHTS[priority],
+  }))
+}
+
+const extractTextFromPdf = async (file) => {
+  const pdfjs = await getPdfJsModule()
+  const fileBuffer = await file.arrayBuffer()
+  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(fileBuffer) })
+  const pdfDocument = await loadingTask.promise
+
+  let textContent = ''
+
+  for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber += 1) {
+    const page = await pdfDocument.getPage(pageNumber)
+    const text = await page.getTextContent()
+    const pageText = text.items
+      .map((item) => ('str' in item ? item.str : ''))
+      .join(' ')
+      .trim()
+
+    textContent += ` ${pageText}`
+  }
+
+  return textContent.toLowerCase()
+}
+
 function App() {
   const profile = {
     photo: profileImage,
@@ -81,6 +218,7 @@ function App() {
     { label: 'Achievements', path: '/achievements' },
     { label: 'Activities', path: '/activities' },
     { label: 'Languages', path: '/languages' },
+    { label: 'Resume Match', path: '/resume-match' },
   ]
 
   const SectionHeader = ({ title, description }) => (
@@ -287,6 +425,183 @@ function App() {
     </Layout>
   )
 
+  const ResumeMatchPage = () => {
+    const [resumeFile, setResumeFile] = useState(null)
+    const [jobDescriptionFile, setJobDescriptionFile] = useState(null)
+    const [isAnalyzing, setIsAnalyzing] = useState(false)
+    const [error, setError] = useState('')
+    const [analysis, setAnalysis] = useState(null)
+
+    const handleAnalyze = async () => {
+      if (!resumeFile || !jobDescriptionFile) {
+        setError('Upload both Resume PDF and Job Description PDF.')
+        return
+      }
+
+      setError('')
+      setIsAnalyzing(true)
+      setAnalysis(null)
+
+      try {
+        const [resumeText, jdText] = await Promise.all([
+          extractTextFromPdf(resumeFile),
+          extractTextFromPdf(jobDescriptionFile),
+        ])
+
+        const weightedRequirements = extractWeightedRequirements(jdText)
+        const resumeSkills = extractSkillsFromText(resumeText)
+        const resumeSkillSet = new Set(resumeSkills)
+
+        if (weightedRequirements.length === 0) {
+          setAnalysis({
+            score: 0,
+            matchedSkills: [],
+            missingSkills: [],
+            missingMustHaveSkills: [],
+            missingOptionalSkills: [],
+            note: 'No known skills were detected in the uploaded job description PDF.',
+          })
+          return
+        }
+
+        const matchedRequirements = weightedRequirements.filter((requirement) =>
+          resumeSkillSet.has(requirement.skill),
+        )
+        const missingRequirements = weightedRequirements.filter(
+          (requirement) => !resumeSkillSet.has(requirement.skill),
+        )
+        const totalWeight = weightedRequirements.reduce(
+          (sum, requirement) => sum + requirement.weight,
+          0,
+        )
+        const matchedWeight = matchedRequirements.reduce(
+          (sum, requirement) => sum + requirement.weight,
+          0,
+        )
+        const score = Math.round((matchedWeight / totalWeight) * 100)
+
+        const missingMustHaveSkills = missingRequirements
+          .filter((requirement) => requirement.priority === 'mustHave')
+          .map((requirement) => requirement.skill)
+        const missingOptionalSkills = missingRequirements
+          .filter((requirement) => requirement.priority === 'optional')
+          .map((requirement) => requirement.skill)
+        const missingSkills = missingRequirements
+          .filter((requirement) => requirement.priority === 'standard')
+          .map((requirement) => requirement.skill)
+        const matchedSkills = matchedRequirements.map((requirement) => requirement.skill)
+
+        setAnalysis({
+          score,
+          matchedSkills,
+          missingSkills,
+          missingMustHaveSkills,
+          missingOptionalSkills,
+          note: '',
+        })
+      } catch (analysisError) {
+        setError(
+          `Could not analyze one or both PDFs. ${analysisError.message ||
+            'Try with text-based PDF files.'}`,
+        )
+      } finally {
+        setIsAnalyzing(false)
+      }
+    }
+
+    return (
+      <Layout>
+        <SectionHeader
+          title="Resume Match"
+          description="Upload Resume PDF and Job Description PDF to get a compatibility score and missing skills."
+        />
+
+        <div className="resume-upload-grid">
+          <label className="upload-card" htmlFor="resume-upload">
+            <span>Resume PDF</span>
+            <input
+              id="resume-upload"
+              type="file"
+              accept="application/pdf"
+              onChange={(event) => setResumeFile(event.target.files?.[0] ?? null)}
+            />
+            <small>{resumeFile ? resumeFile.name : 'Choose your resume PDF'}</small>
+          </label>
+
+          <label className="upload-card" htmlFor="jd-upload">
+            <span>Job Description PDF</span>
+            <input
+              id="jd-upload"
+              type="file"
+              accept="application/pdf"
+              onChange={(event) => setJobDescriptionFile(event.target.files?.[0] ?? null)}
+            />
+            <small>{jobDescriptionFile ? jobDescriptionFile.name : 'Choose job description PDF'}</small>
+          </label>
+        </div>
+
+        <button
+          type="button"
+          className="analyze-btn mt-1"
+          onClick={handleAnalyze}
+          disabled={isAnalyzing}
+        >
+          {isAnalyzing ? 'Analyzing PDFs...' : 'Generate Score'}
+        </button>
+
+        {error && <p className="resume-error mt-1">{error}</p>}
+
+        {analysis && (
+          <div className="card mt-1">
+            <h3>Match Score: {analysis.score}%</h3>
+            {analysis.note ? (
+              <p>{analysis.note}</p>
+            ) : (
+              <>
+                <p>
+                  Matched Skills ({analysis.matchedSkills.length}):{' '}
+                  {analysis.matchedSkills.join(', ') || 'None'}
+                </p>
+                <h4>Must-have skills missing in resume</h4>
+                {analysis.missingMustHaveSkills.length === 0 ? (
+                  <p>None</p>
+                ) : (
+                  <ul>
+                    {analysis.missingMustHaveSkills.map((skill) => (
+                      <li key={skill}>{skill}</li>
+                    ))}
+                  </ul>
+                )}
+
+                <h4>Other required skills missing</h4>
+                {analysis.missingSkills.length === 0 ? (
+                  <p>No missing skills detected from this job description.</p>
+                ) : (
+                  <ul>
+                    {analysis.missingSkills.map((skill) => (
+                      <li key={skill}>{skill}</li>
+                    ))}
+                  </ul>
+                )}
+
+                <h4>Optional skills missing</h4>
+                {analysis.missingOptionalSkills.length === 0 ? (
+                  <p>None</p>
+                ) : (
+                  <ul>
+                    {analysis.missingOptionalSkills.map((skill) => (
+                      <li key={skill}>{skill}</li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </Layout>
+    )
+  }
+
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
@@ -297,6 +612,7 @@ function App() {
       <Route path="/achievements" element={<AchievementsPage />} />
       <Route path="/activities" element={<ActivitiesPage />} />
       <Route path="/languages" element={<LanguagesPage />} />
+      <Route path="/resume-match" element={<ResumeMatchPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

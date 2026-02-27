@@ -215,6 +215,63 @@
   box-shadow: 0 0 0 3px rgba(30, 91, 198, 0.18);
 }
 
+.resume-upload-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.8rem;
+}
+
+.upload-card {
+  border: 1px solid #d8e1f2;
+  border-radius: 12px;
+  padding: 0.9rem;
+  background: #f8faff;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.upload-card span {
+  font-weight: 600;
+}
+
+.upload-card input {
+  border: 1px solid #c9d8f7;
+  border-radius: 8px;
+  padding: 0.45rem;
+  background: #fff;
+}
+
+.upload-card small {
+  color: #4e6088;
+  word-break: break-word;
+}
+
+.analyze-btn {
+  border: 1px solid #1e5bc6;
+  background: #1e5bc6;
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.52rem 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.analyze-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(30, 91, 198, 0.16);
+}
+
+.analyze-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.resume-error {
+  margin-bottom: 0;
+  color: #b00020;
+  font-weight: 600;
+}
+
 .project-btn {
   text-align: left;
   border: 1px solid #d8e1f2;
