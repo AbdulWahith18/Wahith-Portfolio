@@ -1,0 +1,364 @@
+.frontpage {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 1.1rem;
+  background: linear-gradient(130deg, #0b2552 0%, #1a3a78 40%, #2f3f86 72%, #4b4a94 100%);
+  background-size: 160% 160%;
+  animation: gradientDrift 20s ease-in-out infinite;
+  transition: opacity 0.24s ease, transform 0.24s ease;
+}
+
+.frontpage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 48%, transparent 38%, rgba(4, 10, 25, 0.34) 100%);
+}
+
+.fp-blob {
+  position: fixed;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(68px);
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+.fp-blob-one {
+  width: 420px;
+  height: 420px;
+  top: -130px;
+  left: -140px;
+  background: #4f81df;
+}
+
+.fp-blob-two {
+  width: 460px;
+  height: 460px;
+  right: -160px;
+  bottom: -160px;
+  background: #675dd3;
+}
+
+.fp-blob-three {
+  width: 320px;
+  height: 320px;
+  right: 18%;
+  top: 12%;
+  background: #4f67cb;
+  opacity: 0.16;
+}
+
+.fp-hero {
+  width: min(680px, 94vw);
+  border-radius: 28px;
+  border: 1px solid rgba(176, 203, 250, 0.36);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(7px);
+  box-shadow:
+    0 28px 48px rgba(10, 24, 51, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  padding: clamp(2rem, 5vw, 3rem) 1.2rem;
+  text-align: center;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  transition: box-shadow 0.35s ease, transform 0.35s ease;
+}
+
+.fp-hero:hover {
+  box-shadow:
+    0 34px 58px rgba(10, 24, 51, 0.5),
+    0 0 0 1px rgba(178, 207, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.fp-profile-wrap {
+  margin-bottom: 1.06rem;
+  animation: profileFloat 5.2s ease-in-out infinite;
+}
+
+.fp-profile-ring {
+  width: 152px;
+  height: 152px;
+  padding: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: linear-gradient(140deg, #5f9bff 0%, #7eb4ff 40%, #9588f0 68%, #5f9bff 100%);
+  background-size: 180% 180%;
+  box-shadow:
+    0 18px 28px rgba(13, 31, 65, 0.45),
+    0 0 0 5px rgba(118, 160, 245, 0.28);
+  animation: pulseRing 3.8s ease-in-out infinite, ringShift 8s linear infinite;
+  transition: transform 0.3s ease;
+  box-sizing: border-box;
+}
+
+.fp-profile-ring:hover {
+  transform: scale(1.04);
+}
+
+.fp-profile-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 999px;
+  object-fit: cover;
+  object-position: 56% 20%;
+  transform: scale(1.2);
+  background: #1e5bc6;
+  box-shadow: inset 0 0 0 2px #1e5bc6;
+}
+
+.fp-hero h1 {
+  margin: 0;
+  font-size: clamp(2.3rem, 7vw, 3.8rem);
+  letter-spacing: 0.11em;
+  font-weight: 900;
+  color: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, #e7efff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.12;
+  text-transform: uppercase;
+  text-shadow: 0 4px 10px rgba(5, 12, 28, 0.22);
+  position: relative;
+}
+
+.fp-hero h1::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+  width: 62%;
+  height: 14px;
+  filter: blur(14px);
+  background: rgba(138, 176, 248, 0.28);
+  z-index: -1;
+}
+
+.fp-role {
+  margin: 0.88rem 0 1.35rem;
+  color: rgba(255, 255, 255, 0.83);
+  letter-spacing: 0.07em;
+  font-size: 1rem;
+  font-weight: 550;
+}
+
+.fp-cta-row {
+  margin-top: 0.4rem;
+  display: grid;
+  justify-items: center;
+  gap: 0.58rem;
+}
+
+.fp-btn {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.7rem 1.32rem;
+  font-weight: 650;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  text-decoration: none;
+}
+
+.fp-btn:hover {
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.fp-btn-primary {
+  min-width: 208px;
+  color: #ffffff;
+  border: 0;
+  background: linear-gradient(120deg, #2a6be0 0%, #4a88ee 52%, #6b90f1 100%);
+  background-size: 180% 180%;
+  box-shadow: 0 14px 24px rgba(20, 63, 144, 0.46);
+  cursor: pointer;
+}
+
+.fp-btn-primary:hover {
+  transform: translateY(-3px);
+  animation: buttonShift 2.4s ease-in-out infinite;
+  box-shadow:
+    0 18px 30px rgba(23, 73, 161, 0.5),
+    0 0 0 7px rgba(108, 149, 235, 0.18);
+}
+
+.fp-btn-primary span {
+  display: inline-block;
+  margin-left: 0.24rem;
+  transition: transform 0.25s ease;
+}
+
+.fp-btn-primary:hover span {
+  transform: translateX(2px);
+}
+
+.fp-btn-secondary {
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 0.88rem;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.18rem;
+}
+
+.fp-btn-secondary:hover {
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.fp-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  animation: fpReveal 0.45s ease forwards;
+  animation-delay: var(--delay, 0s);
+}
+
+.fp-seq {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fpReveal 0.55s ease forwards;
+}
+
+.fp-seq-profile {
+  animation-delay: 0.06s;
+}
+
+.fp-seq-name {
+  animation-delay: 0.18s;
+}
+
+.fp-seq-role {
+  animation-delay: 0.3s;
+}
+
+.fp-seq-cta {
+  animation-delay: 0.42s;
+}
+
+.fp-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 20% 26%, rgba(255, 255, 255, 0.15) 0 1.2px, transparent 1.2px),
+    radial-gradient(circle at 78% 68%, rgba(255, 255, 255, 0.12) 0 1.3px, transparent 1.3px),
+    radial-gradient(circle at 64% 30%, rgba(255, 255, 255, 0.1) 0 1.1px, transparent 1.1px);
+  opacity: 0.35;
+}
+
+.fp-exit {
+  opacity: 0;
+  transform: scale(1.01);
+}
+
+@keyframes fpReveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gradientDrift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes ringShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes buttonShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes profileFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pulseRing {
+  0%,
+  100% {
+    box-shadow:
+      0 18px 28px rgba(13, 31, 65, 0.45),
+      0 0 0 5px rgba(118, 160, 245, 0.26);
+  }
+
+  50% {
+    box-shadow:
+      0 20px 32px rgba(13, 31, 65, 0.5),
+      0 0 0 8px rgba(118, 160, 245, 0.36);
+  }
+}
+
+@media (max-width: 768px) {
+  .frontpage {
+    padding: 0.9rem;
+  }
+
+  .fp-hero {
+    width: 100%;
+    padding: 2.05rem 0.95rem;
+    border-radius: 20px;
+  }
+
+  .fp-hero h1 {
+    font-size: clamp(2rem, 9vw, 2.8rem);
+  }
+
+  .fp-role {
+    font-size: 0.88rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-reveal,
+  .fp-seq,
+  .fp-profile-ring,
+  .fp-profile-wrap,
+  .frontpage,
+  .fp-btn,
+  .fp-exit {
+    animation: none !important;
+    transition: none !important;
+  }
+}

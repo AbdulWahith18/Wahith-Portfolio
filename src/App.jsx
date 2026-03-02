@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
 import profileImage from './mine.jpg'
+import FrontPage from './FrontPage'
 import './App.css'
 
 const PDF_JS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.8.69/build/pdf.min.mjs'
@@ -163,16 +164,31 @@ function App() {
   const projects = [
     {
       name: 'KeySprint',
+      techStack: ['Web App', 'Firebase', 'Real-Time Sync', 'Leaderboard System'],
+      actions: [
+        { label: 'View GitHub', href: 'https://github.com/AbdulWahith18', variant: 'primary' },
+        { label: 'Read More', href: null, variant: 'secondary' },
+      ],
       description:
         'KeySprint is a web-based typing speed application inspired by MonkeyType that helps users improve their typing skills through real-time performance tracking and competitive leaderboards. The platform includes a dynamic typing interface that measures typing speed (WPM), accuracy, and identifies the user\'s weakest letters for focused improvement. It features secure user authentication and profile management using Firebase, where user credentials and detailed typing records are stored and managed efficiently. A competitive leaderboard system ranks users based on their performance, encouraging consistent practice and skill enhancement. The application provides a smooth and interactive user experience while maintaining real-time data synchronization through Firebase.',
     },
     {
       name: 'NotifyMe',
+      techStack: ['Web App', 'Chatbot', 'Reminder Scheduling', 'Notification System'],
+      actions: [
+        { label: 'View GitHub', href: 'https://github.com/AbdulWahith18', variant: 'primary' },
+        { label: 'Read More', href: null, variant: 'secondary' },
+      ],
       description:
         'The purpose of NotifyMe is to provide and assist users with a personal wellness assistant that helps them manage their daily routines and future tasks. The system combines an interactive chatbot with a reminder scheduling feature so that the users can receive supportive conversations as well as timely notifications for important future activities.',
     },
     {
       name: 'Hostel Outpass Management System',
+      techStack: ['Web App', 'Digital Approval Flow', 'Real-Time Verification', 'Centralized Records'],
+      actions: [
+        { label: 'View GitHub', href: 'https://github.com/AbdulWahith18', variant: 'primary' },
+        { label: 'Read More', href: null, variant: 'secondary' },
+      ],
       description:
         'The Hostel Outpass Management System is a web-based platform designed to replace the traditional paper-based outpass process in hostels. It allows students to apply for outpasses online, wardens to approve or reject requests digitally, and security staff to verify them in real time at the hostel gate. The system solves issues such as delays, misplaced records, and lack of transparency in manual processes. Key features include online application and approval, real-time status updates, secure verification, and centralized record storage. Overall, it improves efficiency, coordination, and security among students, wardens, administrators, and security staff.',
     },
@@ -237,15 +253,24 @@ function App() {
         <h1>ABDUL WAHITH M</h1>
         <p className="subtitle">Aspiring Software Developer</p>
         <div className="contact-list">
-          <a href="mailto:abdulwahith0818@gmail.com">abdulwahith0818@gmail.com</a>
-          <a href="tel:+918553132883">+91 85531 32883</a>
-          <span>Pottal Pudhur, Tenkasi - 627423</span>
+          <a href="mailto:abdulwahith0818@gmail.com" className="contact-item">
+            <span aria-hidden="true">✉️</span>
+            <span>abdulwahith0818@gmail.com</span>
+          </a>
+          <a href="tel:+918553132883" className="contact-item">
+            <span aria-hidden="true">📞</span>
+            <span>+91 85531 32883</span>
+          </a>
+          <span className="contact-item">
+            <span aria-hidden="true">📍</span>
+            <span>Pottal Pudhur, Tenkasi - 627423</span>
+          </span>
         </div>
         <div className="social-links">
-          <a href={profile.github} target="_blank" rel="noreferrer">
+          <a href={profile.github} target="_blank" rel="noreferrer" className="social-btn social-btn-primary">
             GitHub
           </a>
-          <a href={profile.linkedin} target="_blank" rel="noreferrer">
+          <a href={profile.linkedin} target="_blank" rel="noreferrer" className="social-btn social-btn-secondary">
             LinkedIn
           </a>
         </div>
@@ -286,16 +311,26 @@ function App() {
 
   const ObjectivePage = () => (
     <Layout>
-      <SectionHeader
-        title="Objective"
-        description="Career focus and the kind of software opportunities I am pursuing."
-      />
-      <p>
-        To obtain a challenging opportunity in the field of software development where I can apply
-        my knowledge of full-stack development, contribute effectively to innovative projects, and
-        continuously enhance my technical and problem-solving skills while growing as a
-        professional.
-      </p>
+      <section className="objective-showcase-card">
+        <header className="objective-showcase-head">
+          <h2>
+            <span className="objective-icon" aria-hidden="true">
+              🎯
+            </span>
+            Objective
+          </h2>
+          <p>Career focus and the kind of software opportunities I am pursuing.</p>
+        </header>
+
+        <article className="objective-statement">
+          <h3>To obtain a challenging opportunity in the field of software development.</h3>
+          <p>
+            Where I can apply my knowledge of full-stack development, contribute effectively to
+            innovative projects, and continuously enhance my technical and problem-solving skills
+            while growing as a professional.
+          </p>
+        </article>
+      </section>
     </Layout>
   )
 
@@ -306,122 +341,281 @@ function App() {
       [query],
     )
 
+    const softSkills = new Set(['Problem Solving', 'Analytical Thinking', 'Leadership'])
+    const technicalIcons = {
+      C: '⚙️',
+      'C++': '🧩',
+      Java: '☕',
+      'Fullstack Development': '🖥️',
+      'Data Structures and Algorithms': '📐',
+      'Database Management System': '🗄️',
+      'Oracle SQL': '🛢️',
+    }
+
     return (
       <Layout>
-        <SectionHeader
-          title="Skills"
-          description="Filter and explore technical and professional strengths."
-        />
-        <input
-          className="search-input"
-          type="text"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search skills..."
-        />
-        <ul className="pill-list mt-1">
-          {filteredSkills.map((skill) => (
-            <li key={skill}>{skill}</li>
-          ))}
-        </ul>
+        <section className="skills-feature-card">
+          <header className="skills-head">
+            <h2>Skills</h2>
+            <p>Filter and explore technical strengths and professional capabilities.</p>
+          </header>
+
+          <div className="skill-search-wrap">
+            <span className="skill-search-icon" aria-hidden="true">
+              🔎
+            </span>
+            <input
+              className="skill-search-input"
+              type="text"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search skills..."
+            />
+          </div>
+
+          <ul className="skills-pill-grid mt-1">
+            {filteredSkills.map((skill) => {
+              const isSoftSkill = softSkills.has(skill)
+              const icon = technicalIcons[skill]
+
+              return (
+                <li key={skill}>
+                  <button
+                    type="button"
+                    className={isSoftSkill ? 'skill-pill soft' : 'skill-pill tech'}
+                  >
+                    {icon && (
+                      <span className="skill-pill-icon" aria-hidden="true">
+                        {icon}
+                      </span>
+                    )}
+                    <span>{skill}</span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
       </Layout>
     )
   }
 
   const ProjectsPage = () => {
     const [selectedProject, setSelectedProject] = useState(projects[0])
+    const projectParagraphs = selectedProject.description
+      .split(/(?<=[.!?])\s+/)
+      .map((item) => item.trim())
+      .filter(Boolean)
 
     return (
       <Layout>
-        <SectionHeader
-          title="Projects"
-          description="Select any project card to view its full details."
-        />
-        <div className="project-grid">
+        <section className="projects-showcase-card">
+          <header className="projects-showcase-head">
+            <h2>Projects</h2>
+            <p>Select a project to explore implementation details, capabilities, and core outcomes.</p>
+          </header>
+
+          <div className="project-tabs-wrap">
           {projects.map((project) => (
             <button
               key={project.name}
               type="button"
-              className={selectedProject.name === project.name ? 'project-btn active' : 'project-btn'}
+              className={selectedProject.name === project.name ? 'project-tab active' : 'project-tab'}
               onClick={() => setSelectedProject(project)}
             >
               {project.name}
             </button>
           ))}
-        </div>
-        <article className="card mt-1">
-          <h3>{selectedProject.name}</h3>
-          <p>{selectedProject.description}</p>
-        </article>
+          </div>
+
+          <article className="project-showcase-card mt-1">
+            <h3>{selectedProject.name}</h3>
+
+            <div className="project-tech-badges">
+              {selectedProject.techStack.map((tech) => (
+                <span key={`${selectedProject.name}-${tech}`}>{tech}</span>
+              ))}
+            </div>
+
+            <div className="project-content-grid">
+              <section>
+                <h4>Overview</h4>
+                <p>{projectParagraphs[0]}</p>
+              </section>
+
+              {projectParagraphs.length > 1 && (
+                <section>
+                  <h4>Highlights</h4>
+                  {projectParagraphs.slice(1).map((paragraph) => (
+                    <p key={`${selectedProject.name}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
+                  ))}
+                </section>
+              )}
+            </div>
+
+            <div className="project-action-row">
+              {selectedProject.actions.map((action) => (
+                action.href ? (
+                  <a
+                    key={`${selectedProject.name}-${action.label}`}
+                    href={action.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={action.variant === 'primary' ? 'project-action-btn primary' : 'project-action-btn secondary'}
+                  >
+                    {action.label}
+                  </a>
+                ) : (
+                  <button
+                    key={`${selectedProject.name}-${action.label}`}
+                    type="button"
+                    className={action.variant === 'primary' ? 'project-action-btn primary' : 'project-action-btn secondary'}
+                  >
+                    {action.label}
+                  </button>
+                )
+              ))}
+            </div>
+          </article>
+        </section>
       </Layout>
     )
   }
 
   const EducationPage = () => (
     <Layout>
-      <SectionHeader
-        title="Education"
-        description="Academic timeline and performance highlights."
-      />
-      <div className="timeline">
-        {education.map((item) => (
-          <article key={item.year + item.title} className="card">
-            <p className="year">{item.year}</p>
-            <h3>{item.title}</h3>
-            <p>{item.institution}</p>
-            <p className="score">{item.score}</p>
-          </article>
-        ))}
-      </div>
+      <section className="education-showcase-card">
+        <header className="education-showcase-head">
+          <h2>Education</h2>
+          <p>Academic progression with key milestones and performance highlights.</p>
+        </header>
+
+        <div className="education-timeline">
+          {education.map((item) => (
+            <article key={item.year + item.title} className="education-item-card">
+              <span className="education-year-pill">{item.year}</span>
+              <h3>{item.title}</h3>
+              <p className="education-institution">{item.institution}</p>
+              <p className="education-score">{item.score}</p>
+            </article>
+          ))}
+        </div>
+      </section>
     </Layout>
   )
 
   const AchievementsPage = () => (
     <Layout>
-      <SectionHeader
-        title="Achievements & Awards"
-        description="Recognition earned through academics and extracurricular activities."
-      />
-      <div className="list-grid">
-        {achievements.map((achievement) => (
-          <article key={achievement} className="card hover-rise">
-            <p>{achievement}</p>
-          </article>
-        ))}
-      </div>
+      <section className="awards-showcase-card">
+        <header className="awards-showcase-head">
+          <h2>Achievements & Awards</h2>
+          <p>Recognition across academics and extracurricular milestones.</p>
+        </header>
+
+        <div className="awards-grid">
+          {achievements.map((achievement) => {
+            const awardMeta =
+              {
+                'HSC School Topper': { icon: '🏆', type: 'academic' },
+                'SSLC school third': { icon: '🥉', type: 'academic' },
+                'Chess Zonal Winner': { icon: '♟️', type: 'sports' },
+                'Football Zonal Runners-up': { icon: '⚽', type: 'sports' },
+              }[achievement] || { icon: '🏅', type: 'academic' }
+
+            return (
+              <article
+                key={achievement}
+                className={awardMeta.type === 'academic' ? 'award-card academic' : 'award-card sports'}
+              >
+                <span className="award-icon" aria-hidden="true">
+                  {awardMeta.icon}
+                </span>
+                <div className="award-content">
+                  <h3>{achievement}</h3>
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      </section>
     </Layout>
   )
 
   const ActivitiesPage = () => (
     <Layout>
-      <SectionHeader
-        title="Activities"
-        description="Interests outside academics that keep me active and engaged."
-      />
-      <div className="list-grid">
-        {activities.map((activity) => (
-          <article key={activity} className="card hover-rise">
-            <p>{activity}</p>
-          </article>
-        ))}
-      </div>
+      <section className="activities-showcase-card">
+        <header className="activities-showcase-head">
+          <h2>Activities</h2>
+          <p>Interests outside academics that keep me active, focused, and creatively inspired.</p>
+        </header>
+
+        <div className="activities-grid">
+          {activities.map((activity) => {
+            const activityMeta =
+              {
+                Chess: { icon: '♟️', tone: 'chess' },
+                'Following Cricket': { icon: '🏏', tone: 'cricket' },
+                'Watching Movies and listening musics': { icon: '🎬', tone: 'movies' },
+              }[activity] || { icon: '✨', tone: 'neutral' }
+
+            return (
+              <article key={activity} className={`activity-card ${activityMeta.tone}`}>
+                <span className="activity-icon" aria-hidden="true">
+                  {activityMeta.icon}
+                </span>
+                <h3>{activity}</h3>
+              </article>
+            )
+          })}
+        </div>
+      </section>
     </Layout>
   )
 
   const LanguagesPage = () => (
     <Layout>
-      <SectionHeader
-        title="Languages"
-        description="Languages I can comfortably communicate in."
-      />
-      <div className="list-grid">
-        {languages.map((language) => (
-          <article key={language} className="card hover-rise">
-            <h3>{language}</h3>
-            <p>Communication ready</p>
-          </article>
-        ))}
-      </div>
+      <section className="languages-showcase-card">
+        <header className="languages-showcase-head">
+          <h2>Languages</h2>
+          <p>Languages I can comfortably communicate in across personal and professional contexts.</p>
+        </header>
+
+        <div className="languages-grid">
+          {languages.map((language) => {
+            const languageMeta =
+              {
+                English: { icon: '🇬🇧', proficiency: 92, tone: 'blue', label: 'Professional' },
+                Tamil: { icon: '🇮🇳', proficiency: 95, tone: 'violet', label: 'Fluent' },
+                'Telugu (regional)': {
+                  icon: '🗣️',
+                  proficiency: 82,
+                  tone: 'teal',
+                  label: 'Conversational',
+                },
+              }[language] || { icon: '🌐', proficiency: 80, tone: 'blue', label: 'Communication Ready' }
+
+            return (
+              <article key={language} className={`language-card ${languageMeta.tone}`}>
+                <div className="language-top-row">
+                  <span className="language-icon" aria-hidden="true">
+                    {languageMeta.icon}
+                  </span>
+                  <h3>{language}</h3>
+                </div>
+
+                <div className="language-meta-row">
+                  <span className="language-level-tag">{languageMeta.label}</span>
+                  <span className="language-ready-tag">Communication ready</span>
+                </div>
+
+                <div className="language-progress" aria-hidden="true">
+                  <span style={{ '--fill': `${languageMeta.proficiency}%` }} />
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      </section>
     </Layout>
   )
 
@@ -511,100 +705,171 @@ function App() {
 
     return (
       <Layout>
-        <SectionHeader
-          title="Resume Match"
-          description="Upload Resume PDF and Job Description PDF to get a compatibility score and missing skills."
-        />
+        <section className="resume-feature-card">
+          <header className="resume-feature-head">
+            <h2>
+              <span className="ai-icon" aria-hidden="true">
+                ✨
+              </span>
+              Resume Match
+            </h2>
+            <p>
+              Upload your resume and a job description PDF to generate an AI-style compatibility
+              score and highlight missing skills.
+            </p>
+          </header>
 
-        <div className="resume-upload-grid">
-          <label className="upload-card" htmlFor="resume-upload">
-            <span>Resume PDF</span>
-            <input
-              id="resume-upload"
-              type="file"
-              accept="application/pdf"
-              onChange={(event) => setResumeFile(event.target.files?.[0] ?? null)}
-            />
-            <small>{resumeFile ? resumeFile.name : 'Choose your resume PDF'}</small>
-          </label>
+          <div className="resume-upload-grid">
+            <label
+              className={resumeFile ? 'upload-zone has-file' : 'upload-zone'}
+              htmlFor="resume-upload"
+            >
+              <input
+                id="resume-upload"
+                className="upload-input"
+                type="file"
+                accept="application/pdf"
+                onChange={(event) => setResumeFile(event.target.files?.[0] ?? null)}
+              />
+              <span className="upload-icon" aria-hidden="true">
+                📄
+              </span>
+              <span className="upload-title">Resume PDF</span>
+              <span className="upload-file-name">
+                {resumeFile ? resumeFile.name : 'Drag & drop or click to upload'}
+              </span>
+              <small>Accepted format: PDF · Used to detect your current skills</small>
+            </label>
 
-          <label className="upload-card" htmlFor="jd-upload">
-            <span>Job Description PDF</span>
-            <input
-              id="jd-upload"
-              type="file"
-              accept="application/pdf"
-              onChange={(event) => setJobDescriptionFile(event.target.files?.[0] ?? null)}
-            />
-            <small>{jobDescriptionFile ? jobDescriptionFile.name : 'Choose job description PDF'}</small>
-          </label>
-        </div>
-
-        <button
-          type="button"
-          className="analyze-btn mt-1"
-          onClick={handleAnalyze}
-          disabled={isAnalyzing}
-        >
-          {isAnalyzing ? 'Analyzing PDFs...' : 'Generate Score'}
-        </button>
-
-        {error && <p className="resume-error mt-1">{error}</p>}
-
-        {analysis && (
-          <div className="card mt-1">
-            <h3>Match Score: {analysis.score}%</h3>
-            {analysis.note ? (
-              <p>{analysis.note}</p>
-            ) : (
-              <>
-                <p>
-                  Matched Skills ({analysis.matchedSkills.length}):{' '}
-                  {analysis.matchedSkills.join(', ') || 'None'}
-                </p>
-                <h4>Must-have skills missing in resume</h4>
-                {analysis.missingMustHaveSkills.length === 0 ? (
-                  <p>None</p>
-                ) : (
-                  <ul>
-                    {analysis.missingMustHaveSkills.map((skill) => (
-                      <li key={skill}>{skill}</li>
-                    ))}
-                  </ul>
-                )}
-
-                <h4>Other required skills missing</h4>
-                {analysis.missingSkills.length === 0 ? (
-                  <p>No missing skills detected from this job description.</p>
-                ) : (
-                  <ul>
-                    {analysis.missingSkills.map((skill) => (
-                      <li key={skill}>{skill}</li>
-                    ))}
-                  </ul>
-                )}
-
-                <h4>Optional skills missing</h4>
-                {analysis.missingOptionalSkills.length === 0 ? (
-                  <p>None</p>
-                ) : (
-                  <ul>
-                    {analysis.missingOptionalSkills.map((skill) => (
-                      <li key={skill}>{skill}</li>
-                    ))}
-                  </ul>
-                )}
-              </>
-            )}
+            <label
+              className={jobDescriptionFile ? 'upload-zone has-file' : 'upload-zone'}
+              htmlFor="jd-upload"
+            >
+              <input
+                id="jd-upload"
+                className="upload-input"
+                type="file"
+                accept="application/pdf"
+                onChange={(event) => setJobDescriptionFile(event.target.files?.[0] ?? null)}
+              />
+              <span className="upload-icon" aria-hidden="true">
+                🧠
+              </span>
+              <span className="upload-title">Job Description PDF</span>
+              <span className="upload-file-name">
+                {jobDescriptionFile ? jobDescriptionFile.name : 'Drag & drop or click to upload'}
+              </span>
+              <small>Accepted format: PDF · Used to extract required skills</small>
+            </label>
           </div>
-        )}
+
+          <button
+            type="button"
+            className="analyze-btn resume-analyze-btn"
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+          >
+            {isAnalyzing ? (
+              <>
+                <span className="btn-spinner" aria-hidden="true" />
+                Analyzing PDFs...
+              </>
+            ) : (
+              'Generate Score'
+            )}
+          </button>
+
+          {error && <p className="resume-error mt-1">{error}</p>}
+
+          {analysis && (
+            <div className="resume-results-card mt-1">
+              <div className="result-score-wrap">
+                <div className="score-ring" style={{ '--progress': `${analysis.score}%` }}>
+                  <div className="score-ring-inner">
+                    <strong>{analysis.score}%</strong>
+                    <span>Match</span>
+                  </div>
+                </div>
+                <div>
+                  <h3>AI Match Score</h3>
+                  {analysis.note ? <p>{analysis.note}</p> : <p>Based on weighted skill extraction from the uploaded job description.</p>}
+                </div>
+              </div>
+
+              {!analysis.note && (
+                <div className="result-badges-grid">
+                  <div className="badge-group">
+                    <h4>Matched Skills</h4>
+                    <div className="skill-badge-wrap">
+                      {analysis.matchedSkills.length === 0 ? (
+                        <span className="skill-badge neutral">None</span>
+                      ) : (
+                        analysis.matchedSkills.map((skill) => (
+                          <span key={`matched-${skill}`} className="skill-badge success">
+                            {skill}
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="badge-group">
+                    <h4>Missing Must-have</h4>
+                    <div className="skill-badge-wrap">
+                      {analysis.missingMustHaveSkills.length === 0 ? (
+                        <span className="skill-badge neutral">None</span>
+                      ) : (
+                        analysis.missingMustHaveSkills.map((skill) => (
+                          <span key={`must-${skill}`} className="skill-badge critical">
+                            {skill}
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="badge-group">
+                    <h4>Other Missing Skills</h4>
+                    <div className="skill-badge-wrap">
+                      {analysis.missingSkills.length === 0 ? (
+                        <span className="skill-badge neutral">None</span>
+                      ) : (
+                        analysis.missingSkills.map((skill) => (
+                          <span key={`missing-${skill}`} className="skill-badge warning">
+                            {skill}
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="badge-group">
+                    <h4>Optional Missing</h4>
+                    <div className="skill-badge-wrap">
+                      {analysis.missingOptionalSkills.length === 0 ? (
+                        <span className="skill-badge neutral">None</span>
+                      ) : (
+                        analysis.missingOptionalSkills.map((skill) => (
+                          <span key={`optional-${skill}`} className="skill-badge optional">
+                            {skill}
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
       </Layout>
     )
   }
 
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<FrontPage profile={profile} projects={projects} skills={skills} />} />
+      <Route path="/portfolio" element={<HomePage />} />
       <Route path="/objective" element={<ObjectivePage />} />
       <Route path="/skills" element={<SkillsPage />} />
       <Route path="/projects" element={<ProjectsPage />} />
