@@ -4,6 +4,10 @@ import profileImage from './mine.jpg'
 import FrontPage from './FrontPage'
 import './App.css'
 
+const rawApiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim()
+const apiBaseUrl = rawApiBaseUrl.endsWith('/') ? rawApiBaseUrl.slice(0, -1) : rawApiBaseUrl
+const resumeMatchEndpoint = apiBaseUrl ? `${apiBaseUrl}/api/resume-match` : '/api/resume-match'
+
 function App() {
   const profile = {
     photo: profileImage,
@@ -504,10 +508,17 @@ function App() {
         formData.append('resume', resumeFile)
         formData.append('jobDescription', jobDescriptionFile)
 
-        const response = await fetch('/api/resume-match', {
+        const response = await fetch(resumeMatchEndpoint, {
           method: 'POST',
           body: formData,
         })
+
+        const contentType = response.headers.get('content-type') || ''
+        if (!contentType.includes('application/json')) {
+          throw new Error(
+            'Backend API is not reachable. Start backend with npm run dev:full (or npm run server), or set VITE_API_BASE_URL for deployed frontend.',
+          )
+        }
 
         const responseBody = await response.json()
 
