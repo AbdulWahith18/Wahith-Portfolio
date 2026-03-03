@@ -1,6 +1,8 @@
 import express from 'express'
 import multer from 'multer'
 import { PDFParse } from 'pdf-parse'
+import path from "path"
+import { fileURLToPath } from "url"
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -188,6 +190,18 @@ app.post(
     }
   },
 )
+// ===== SERVE FRONTEND (VITE DIST) =====
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Serve dist folder (it is outside server folder)
+app.use(express.static(path.join(__dirname, "..", "dist")))
+
+// Handle SPA routing
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "dist", "index.html"))
+})
 
 app.listen(PORT, () => {
   console.log(`Resume backend listening on port ${PORT}`)
