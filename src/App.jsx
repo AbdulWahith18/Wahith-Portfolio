@@ -4,9 +4,142 @@ import profileImage from './mine.jpg'
 import FrontPage from './FrontPage'
 import './App.css'
 
-const rawApiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim()
-const apiBaseUrl = rawApiBaseUrl.endsWith('/') ? rawApiBaseUrl.slice(0, -1) : rawApiBaseUrl
-const resumeMatchEndpoint = apiBaseUrl ? `${apiBaseUrl}/api/resume-match` : '/api/resume-match'
+const PDF_JS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.8.69/build/pdf.min.mjs'
+const PDF_JS_WORKER_URL =
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs'
+
+const SKILL_KEYWORDS = [
+  { skill: 'JavaScript', patterns: [/\bjavascript\b/, /\bjs\b/] },
+  { skill: 'TypeScript', patterns: [/\btypescript\b/, /\bts\b/] },
+  { skill: 'React', patterns: [/\breact\b/, /\breactjs\b/] },
+  { skill: 'Node.js', patterns: [/\bnode\b/, /\bnode\.js\b/, /\bnodejs\b/] },
+  { skill: 'Express.js', patterns: [/\bexpress\b/, /\bexpress\.js\b/] },
+  { skill: 'Java', patterns: [/\bjava\b/] },
+  { skill: 'Python', patterns: [/\bpython\b/] },
+  { skill: 'C', patterns: [/\bc\b/] },
+  { skill: 'C++', patterns: [/\bc\+\+\b/] },
+  { skill: 'SQL', patterns: [/\bsql\b/, /\bmysql\b/, /\bpostgresql\b/, /\bpostgres\b/] },
+  { skill: 'MongoDB', patterns: [/\bmongodb\b/, /\bmongo\b/] },
+  { skill: 'REST API', patterns: [/\brest\b/, /\bapi\b/] },
+  { skill: 'HTML', patterns: [/\bhtml\b/] },
+  { skill: 'CSS', patterns: [/\bcss\b/] },
+  { skill: 'Git', patterns: [/\bgit\b/, /\bgithub\b/] },
+  { skill: 'Docker', patterns: [/\bdocker\b/] },
+  { skill: 'AWS', patterns: [/\baws\b/, /\bamazon web services\b/] },
+  { skill: 'DSA', patterns: [/\bdata structures\b/, /\balgorithms\b/, /\bdsa\b/] },
+  { skill: 'Problem Solving', patterns: [/\bproblem solving\b/] },
+]
+
+const REQUIREMENT_WEIGHTS = {
+  mustHave: 3,
+  standard: 2,
+  optional: 1,
+}
+
+const MUST_HAVE_CUES = [
+  /\bmust\b/,
+  /\brequired\b/,
+  /\bmandatory\b/,
+  /\bminimum\b/,
+  /\bneed to\b/,
+  /\bshould have\b/,
+]
+
+const OPTIONAL_CUES = [
+  /\bpreferred\b/,
+  /\bnice to have\b/,
+  /\bgood to have\b/,
+  /\bplus\b/,
+  /\bbonus\b/,
+]
+
+let pdfJsPromise
+
+const getPdfJsModule = async () => {
+  if (!pdfJsPromise) {
+    pdfJsPromise = import(/* @vite-ignore */ PDF_JS_URL).then((pdfjs) => {
+      pdfjs.GlobalWorkerOptions.workerSrc = PDF_JS_WORKER_URL
+      return pdfjs
+    })
+  }
+
+  return pdfJsPromise
+}
+
+const getRequirementPriority = (sentence) => {
+  if (MUST_HAVE_CUES.some((pattern) => pattern.test(sentence))) {
+    return 'mustHave'
+  }
+
+  if (OPTIONAL_CUES.some((pattern) => pattern.test(sentence))) {
+    return 'optional'
+  }
+
+  return 'standard'
+}
+
+const comparePriority = (currentPriority, nextPriority) =>
+  REQUIREMENT_WEIGHTS[nextPriority] > REQUIREMENT_WEIGHTS[currentPriority]
+
+const extractSkillsFromText = (text) =>
+  SKILL_KEYWORDS.filter((entry) => entry.patterns.some((pattern) => pattern.test(text))).map(
+    (entry) => entry.skill,
+  )
+
+const extractWeightedRequirements = (jobDescriptionText) => {
+  const sentences = jobDescriptionText
+    .split(/[\n.!?;:]+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean)
+
+  const requirementMap = new Map()
+
+  sentences.forEach((sentence) => {
+    const sentencePriority = getRequirementPriority(sentence)
+
+    SKILL_KEYWORDS.forEach((entry) => {
+      const existsInSentence = entry.patterns.some((pattern) => pattern.test(sentence))
+
+      if (!existsInSentence) {
+        return
+      }
+
+      const existingPriority = requirementMap.get(entry.skill)
+
+      if (!existingPriority || comparePriority(existingPriority, sentencePriority)) {
+        requirementMap.set(entry.skill, sentencePriority)
+      }
+    })
+  })
+
+  return Array.from(requirementMap.entries()).map(([skill, priority]) => ({
+    skill,
+    priority,
+    weight: REQUIREMENT_WEIGHTS[priority],
+  }))
+}
+
+const extractTextFromPdf = async (file) => {
+  const pdfjs = await getPdfJsModule()
+  const fileBuffer = await file.arrayBuffer()
+  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(fileBuffer) })
+  const pdfDocument = await loadingTask.promise
+
+  let textContent = ''
+
+  for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber += 1) {
+    const page = await pdfDocument.getPage(pageNumber)
+    const text = await page.getTextContent()
+    const pageText = text.items
+      .map((item) => ('str' in item ? item.str : ''))
+      .join(' ')
+      .trim()
+
+    textContent += ` ${pageText}`
+  }
+
+  return textContent.toLowerCase()
+}
 
 function App() {
   const profile = {
@@ -504,29 +637,62 @@ function App() {
       setAnalysis(null)
 
       try {
-        const formData = new FormData()
-        formData.append('resume', resumeFile)
-        formData.append('jobDescription', jobDescriptionFile)
+        const [resumeText, jdText] = await Promise.all([
+          extractTextFromPdf(resumeFile),
+          extractTextFromPdf(jobDescriptionFile),
+        ])
 
-        const response = await fetch(resumeMatchEndpoint, {
-          method: 'POST',
-          body: formData,
+        const weightedRequirements = extractWeightedRequirements(jdText)
+        const resumeSkills = extractSkillsFromText(resumeText)
+        const resumeSkillSet = new Set(resumeSkills)
+
+        if (weightedRequirements.length === 0) {
+          setAnalysis({
+            score: 0,
+            matchedSkills: [],
+            missingSkills: [],
+            missingMustHaveSkills: [],
+            missingOptionalSkills: [],
+            note: 'No known skills were detected in the uploaded job description PDF.',
+          })
+          return
+        }
+
+        const matchedRequirements = weightedRequirements.filter((requirement) =>
+          resumeSkillSet.has(requirement.skill),
+        )
+        const missingRequirements = weightedRequirements.filter(
+          (requirement) => !resumeSkillSet.has(requirement.skill),
+        )
+        const totalWeight = weightedRequirements.reduce(
+          (sum, requirement) => sum + requirement.weight,
+          0,
+        )
+        const matchedWeight = matchedRequirements.reduce(
+          (sum, requirement) => sum + requirement.weight,
+          0,
+        )
+        const score = Math.round((matchedWeight / totalWeight) * 100)
+
+        const missingMustHaveSkills = missingRequirements
+          .filter((requirement) => requirement.priority === 'mustHave')
+          .map((requirement) => requirement.skill)
+        const missingOptionalSkills = missingRequirements
+          .filter((requirement) => requirement.priority === 'optional')
+          .map((requirement) => requirement.skill)
+        const missingSkills = missingRequirements
+          .filter((requirement) => requirement.priority === 'standard')
+          .map((requirement) => requirement.skill)
+        const matchedSkills = matchedRequirements.map((requirement) => requirement.skill)
+
+        setAnalysis({
+          score,
+          matchedSkills,
+          missingSkills,
+          missingMustHaveSkills,
+          missingOptionalSkills,
+          note: '',
         })
-
-        const contentType = response.headers.get('content-type') || ''
-        if (!contentType.includes('application/json')) {
-          throw new Error(
-            'Backend API is not reachable. Start backend with npm run dev:full (or npm run server), or set VITE_API_BASE_URL for deployed frontend.',
-          )
-        }
-
-        const responseBody = await response.json()
-
-        if (!response.ok) {
-          throw new Error(responseBody.error || 'Backend analysis failed.')
-        }
-
-        setAnalysis(responseBody)
       } catch (analysisError) {
         setError(
           `Could not analyze one or both PDFs. ${analysisError.message || 'Try with text-based PDF files.'}`,
